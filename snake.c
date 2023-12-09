@@ -6,10 +6,6 @@
 #define HEIGTH 25
 #define WIDTH 50
 
-// Prototypes des fonctions
-int render(void);
-int input(void);
-
 struct Cases
 {
     char Snake;
@@ -31,22 +27,35 @@ struct Position
     int y;
 };
 
+// Prototypes des fonctions
+int render(void);
+int input(void);
+struct Position getFoodLocation();
+
 // Default snake pos
 int XSnakeHeadPos = WIDTH / 2;
 int YSnakeHeadPos = HEIGTH / 2;
 
-struct Position SnakePos[] = {
+/* struct Position Map[WIDTH][HEIGTH]; */
+
+struct Position SnakePos[100] = {
     {
         WIDTH / 2, /// default head pos
         HEIGTH / 2,
-    },
-    {
-        (WIDTH / 2), /// default head pos
-        (HEIGTH / 2) - 1,
-    },
-};
+    }};
 
+int snakeSize = 1;
 int score = 0;
+
+struct Position getFoodLocation()
+{
+    struct Position location;
+
+    location.x = rand() % WIDTH + 1;
+    location.y = rand() % HEIGTH + 1;
+
+    return location;
+}
 
 enum Direction
 {
@@ -58,9 +67,44 @@ enum Direction
 
 enum Direction snakeDirection = North;
 
+struct Position foodLocation;
+
+void updateFood()
+{
+    foodLocation = getFoodLocation();
+}
+void addSnakeBody()
+{
+    snakeSize++;
+    // Add the new position to the end of the array
+    SnakePos[snakeSize].x = SnakePos[0].x;
+    SnakePos[snakeSize].y = SnakePos[0].y;
+}
+
+/* void generateMap()
+{
+    int x;
+    int y;
+
+    for (y = 0; y <= HEIGTH; y++)
+    {
+        for (x = 0; x <= WIDTH; x++)
+        {
+
+        }
+    }
+} */
+
 void updateSnake(void)
 {
-    SnakePos[sizeof(SnakePos) / sizeof(SnakePos[0]) - 1] = SnakePos[0];
+
+    if (foodLocation.x == SnakePos[0].x && foodLocation.y == SnakePos[0].y)
+    {
+        updateFood();
+        addSnakeBody();
+    }
+
+    SnakePos[snakeSize] = SnakePos[0];
     switch (snakeDirection)
     {
     case North:
@@ -87,6 +131,8 @@ void gameLoop()
 
 int main()
 {
+    updateFood();
+
     while (1)
     {
         gameLoop();
@@ -95,9 +141,9 @@ int main()
     return 1;
 }
 
-void drawScore()
+void renderScore()
 {
-    printf("Score : %d", score);
+    printf("Score : %d", (sizeof(SnakePos) / sizeof(SnakePos[0])));
 }
 
 int render()
@@ -110,25 +156,42 @@ int render()
     {
         for (x = 0; x <= WIDTH; x++)
         {
-            for (int i = 0; i < sizeof(SnakePos) / sizeof(SnakePos[0]); i++)
+
+            int isSnake = 0;
+
+            for (int i = 0; i < snakeSize; i++)
             {
                 if (x == SnakePos[i].x && y == SnakePos[i].y)
                 {
+                    if (!SnakePos[i].x || !SnakePos[i].y)
+                        continue;
                     i == 0 ? printf(" %c", c.SnakeHead) : printf(" %c", c.Snake);
+                    isSnake = 1;
                 }
             }
-            if (y == 0 || y == HEIGTH || x == 0 || x == WIDTH)
+
+            if (isSnake == 1)
+                continue;
+
+            if (x == foodLocation.x && y == foodLocation.y)
             {
-                printf(" %c", c.Border);
+                printf(" %c", c.Food);
             }
             else
             {
-                printf("  ");
+                if (y == 0 || y == HEIGTH || x == 0 || x == WIDTH)
+                {
+                    printf(" %c", c.Border);
+                }
+                else
+                {
+                    printf("  ");
+                }
             }
         }
         printf("\n");
     }
-    drawScore();
+    renderScore();
     return 1;
 }
 
@@ -139,17 +202,21 @@ int input(void)
 
     switch (getch())
     {
-    case 'z':
-        snakeDirection = North;
+    case 'w':
+        if (snakeDirection != South)
+            snakeDirection = North;
         break;
     case 's':
-        snakeDirection = South;
+        if (snakeDirection != North)
+            snakeDirection = South;
         break;
-    case 'q':
-        snakeDirection = West;
+    case 'a':
+        if (snakeDirection != East)
+            snakeDirection = West;
         break;
     case 'd':
-        snakeDirection = East;
+        if (snakeDirection != West)
+            snakeDirection = East;
         break;
     }
 }
