@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <conio.h> /* getch() and kbhit() */
 #include <stdlib.h>
+#include <time.h>
 
 #define HEIGTH 25
 #define WIDTH 50
@@ -42,17 +43,28 @@ struct Position SnakePos[100] = {
     {
         WIDTH / 2, /// default head pos
         HEIGTH / 2,
+    },
+    {
+        WIDTH / 2, /// default head pos
+        HEIGTH / 2 - 1,
+    },
+    {
+        WIDTH / 2, /// default head pos
+        HEIGTH / 2 - 2,
     }};
 
-int snakeSize = 1;
+int snakeSize = 3;
 int score = 0;
 
 struct Position getFoodLocation()
 {
     struct Position location;
 
-    location.x = rand() % WIDTH + 1;
-    location.y = rand() % HEIGTH + 1;
+    srand(time(NULL));
+    location.x = rand() % (WIDTH - 1);
+    location.y = rand() % (HEIGTH - 1);
+
+    // TODO : make food not spawn in snake
 
     return location;
 }
@@ -72,6 +84,7 @@ struct Position foodLocation;
 void updateFood()
 {
     foodLocation = getFoodLocation();
+    score++;
 }
 void addSnakeBody()
 {
@@ -104,7 +117,11 @@ void updateSnake(void)
         addSnakeBody();
     }
 
-    SnakePos[snakeSize] = SnakePos[0];
+    for (int i = snakeSize; i >= 1; i--)
+    {
+        SnakePos[i] = SnakePos[i - 1];
+    }
+
     switch (snakeDirection)
     {
     case North:
@@ -136,14 +153,14 @@ int main()
     while (1)
     {
         gameLoop();
-        Sleep(300);
+        Sleep(50);
     }
     return 1;
 }
 
 void renderScore()
 {
-    printf("Score : %d", (sizeof(SnakePos) / sizeof(SnakePos[0])));
+    printf("Score : %d", score);
 }
 
 int render()
@@ -163,8 +180,6 @@ int render()
             {
                 if (x == SnakePos[i].x && y == SnakePos[i].y)
                 {
-                    if (!SnakePos[i].x || !SnakePos[i].y)
-                        continue;
                     i == 0 ? printf(" %c", c.SnakeHead) : printf(" %c", c.Snake);
                     isSnake = 1;
                 }
