@@ -94,7 +94,7 @@ int YSnakeHeadPos = HEIGTH / 2;
 
 /* struct Position Map[WIDTH][HEIGTH]; */
 
-struct Position SnakePos[50] = {
+struct Position SnakePos[(HEIGTH - 1) * (WIDTH - 1)] = {
     {
         WIDTH / 2, /// default head pos
         HEIGTH / 2,
@@ -156,20 +156,6 @@ void addSnakeBody()
     SnakePos[snakeSize].x = SnakePos[0].x;
     SnakePos[snakeSize].y = SnakePos[0].y;
 }
-
-/* void generateMap()
-{
-    int x;
-    int y;
-
-    for (y = 0; y <= HEIGTH; y++)
-    {
-        for (x = 0; x <= WIDTH; x++)
-        {
-
-        }
-    }
-} */
 
 void updateSnake(void)
 {
