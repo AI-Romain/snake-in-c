@@ -7,6 +7,15 @@
 #define HEIGTH 25
 #define WIDTH 50
 
+enum GameState
+{
+    inMenu = 2,
+    Playing = 1,
+    GameOver = 0
+};
+
+enum GameState gameState = inMenu;
+
 struct Cases
 {
     char Snake;
@@ -29,9 +38,55 @@ struct Position
 };
 
 // Prototypes des fonctions
-int render(void);
-int input(void);
+void render(void);
+void renderGameOverScreen(void);
+void renderGameOverScreen(void);
+void triggerGameOver(void);
+void input(void);
 struct Position getFoodLocation();
+
+char *gameOverScreenText =
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                 /$$$$$$                                           /$$$$$$                                    \n"
+    "                /$$__  $$                                         /$$__  $$                                   \n"
+    "               | $$  \\__/  /$$$$$$  /$$$$$$/$$$$   /$$$$$$       | $$  \\ $$ /$$    /$$  /$$$$$$   /$$$$$$   \n"
+    "               | $$ /$$$$ |____  $$| $$_  $$_  $$ /$$__  $$      | $$  | $$|  $$  /$$/ /$$__  $$ /$$__  $$    \n"
+    "               | $$|_  $$  /$$$$$$$| $$ \\ $$ \\ $$| $$$$$$$$      | $$  | $$ \\  $$/$$/ | $$$$$$$$| $$  \\__/\n"
+    "               | $$  \\ $$ /$$__  $$| $$ | $$ | $$| $$_____/      | $$  | $$  \\  $$$/  | $$_____/| $$        \n"
+    "               |  $$$$$$/|  $$$$$$$| $$ | $$ | $$|  $$$$$$$      |  $$$$$$/   \\  $/   |  $$$$$$$| $$         \n"
+    "                \\______/  \\_______/|__/ |__/ |__/ \\_______/       \\______/     \\_/     \\_______/|__/    \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "            Presse Enter to start a new game !                                                                \n"
+    "            Presse x to quit.                                                                                 \n"
+    "                                                                                                              \n";
+char *mainMenuScreenText =
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "             /$$$$$$                      /$$                        /$$$$$$                                          \n"
+    "            /$$__  $$                    | $$                       /$$__  $$                                         \n"
+    "           | $$  \\__/ /$$$$$$$   /$$$$$$ | $$   /$$  /$$$$$$       | $$  \\__/  /$$$$$$  /$$$$$$/$$$$   /$$$$$$      \n"
+    "           |  $$$$$$ | $$__  $$ |____  $$| $$  /$$/ /$$__  $$      | $$ /$$$$ |____  $$| $$_  $$_  $$ /$$__  $$       \n"
+    "            \\____  $$| $$  \\ $$  /$$$$$$$| $$$$$$/ | $$$$$$$$      | $$|_  $$  /$$$$$$$| $$ \\ $$ \\ $$| $$$$$$$$   \n"
+    "            /$$  \\ $$| $$  | $$ /$$__  $$| $$_  $$ | $$_____/      | $$  \\ $$ /$$__  $$| $$ | $$ | $$| $$_____/     \n"
+    "           |  $$$$$$/| $$  | $$|  $$$$$$$| $$ \\  $$|  $$$$$$$      |  $$$$$$/|  $$$$$$$| $$ | $$ | $$|  $$$$$$$      \n"
+    "            \\______/ |__/  |__/ \\_______/|__/  \\__/ \\_______/       \\______/  \\_______/|__/ |__/ |__/ \\_______/\n"
+    "                                                                                                              \n"
+    "                                                                                                              \n"
+    "            Presse Enter to start playing !                                                                   \n"
+    "            Presse x to quit.                                                                                 \n"
+    "                                                                                                              \n";
 
 // Default snake pos
 int XSnakeHeadPos = WIDTH / 2;
@@ -39,21 +94,13 @@ int YSnakeHeadPos = HEIGTH / 2;
 
 /* struct Position Map[WIDTH][HEIGTH]; */
 
-struct Position SnakePos[100] = {
+struct Position SnakePos[50] = {
     {
         WIDTH / 2, /// default head pos
         HEIGTH / 2,
-    },
-    {
-        WIDTH / 2, /// default head pos
-        HEIGTH / 2 - 1,
-    },
-    {
-        WIDTH / 2, /// default head pos
-        HEIGTH / 2 - 2,
     }};
 
-int snakeSize = 3;
+int snakeSize = 1;
 int score = 0;
 
 struct Position getFoodLocation()
@@ -61,10 +108,8 @@ struct Position getFoodLocation()
     struct Position location;
 
     srand(time(NULL));
-    location.x = rand() % (WIDTH - 1);
-    location.y = rand() % (HEIGTH - 1);
-
-    // TODO : make food not spawn in snake
+    location.x = rand() % (WIDTH - 2);
+    location.y = rand() % (HEIGTH - 2);
 
     return location;
 }
@@ -85,6 +130,24 @@ void updateFood()
 {
     foodLocation = getFoodLocation();
     score++;
+}
+
+void triggerGameOver()
+{
+    foodLocation = getFoodLocation();
+    score = 0;
+
+    for (int i = snakeSize; i >= 1; i--)
+    {
+        SnakePos[i] = (struct Position){0, 0};
+    }
+    SnakePos[0].x = WIDTH / 2;
+    SnakePos[0].y = HEIGTH / 2;
+
+    snakeDirection = North;
+
+    snakeSize = 1;
+    gameState = GameOver;
 }
 void addSnakeBody()
 {
@@ -110,6 +173,15 @@ void addSnakeBody()
 
 void updateSnake(void)
 {
+
+    if (
+        SnakePos[0].x <= 0 ||
+        SnakePos[0].x >= WIDTH ||
+        SnakePos[0].y >= HEIGTH ||
+        SnakePos[0].y <= 0)
+    {
+        triggerGameOver();
+    }
 
     if (foodLocation.x == SnakePos[0].x && foodLocation.y == SnakePos[0].y)
     {
@@ -137,13 +209,24 @@ void updateSnake(void)
         SnakePos[0].x--;
         break;
     }
+
+    for (int i = 1; i <= snakeSize; i++)
+    {
+        if (SnakePos[i].x == SnakePos[0].x && SnakePos[i].y == SnakePos[0].y)
+        {
+            triggerGameOver();
+            break;
+        }
+    }
 }
 
 void gameLoop()
 {
     render();
     input();
-    updateSnake();
+
+    if (gameState == Playing)
+        updateSnake();
 }
 
 int main()
@@ -163,12 +246,19 @@ void renderScore()
     printf("Score : %d", score);
 }
 
-int render()
+void renderGameOverScreen()
+{
+    printf(gameOverScreenText);
+}
+void renderMainMenuScreen()
+{
+    printf(mainMenuScreenText);
+}
+void renderPlayScreen()
 {
     int x;
     int y;
 
-    system("cls");
     for (y = 0; y <= HEIGTH; y++)
     {
         for (x = 0; x <= WIDTH; x++)
@@ -206,14 +296,34 @@ int render()
         }
         printf("\n");
     }
-    renderScore();
-    return 1;
+    printf("\nPresse x to quit.                                                                                 \n");
 }
 
-int input(void)
+void render()
+{
+
+    system("cls");
+
+    switch (gameState)
+    {
+    case inMenu:
+        renderMainMenuScreen();
+        break;
+    case GameOver:
+        renderGameOverScreen();
+        break;
+
+    case Playing:
+        renderPlayScreen();
+        renderScore();
+        break;
+    }
+}
+
+void input(void)
 {
     if (!kbhit())
-        return 0;
+        return;
 
     switch (getch())
     {
@@ -232,6 +342,15 @@ int input(void)
     case 'd':
         if (snakeDirection != West)
             snakeDirection = East;
+        break;
+    case 'x':
+        exit(EXIT_SUCCESS);
+        break;
+    case 13: // correspond to the ENTER key
+        if (gameState != Playing)
+        {
+            gameState = Playing;
+        }
         break;
     }
 }
