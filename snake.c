@@ -42,8 +42,7 @@ void render(void);
 void renderGameOverScreen(void);
 void renderGameOverScreen(void);
 void triggerGameOver(void);
-void input(void);
-struct Position getFoodLocation();
+
 
 char *gameOverScreenText =
     "                                                                                                              \n"
@@ -108,8 +107,8 @@ struct Position getFoodLocation()
     struct Position location;
 
     srand(time(NULL));
-    location.x = rand() % (WIDTH - 2);
-    location.y = rand() % (HEIGTH - 2);
+    location.x = rand() % (WIDTH);
+    location.y = rand() % (HEIGTH);
 
     return location;
 }
